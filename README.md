@@ -4,10 +4,25 @@ A fast, TUI-based terminal toolkit written in Rust. Includes a file browser, fol
 
 ## Features
 
-- **File Browser (`fcd`)** — 3-column Miller-style file browser with preview. Press Enter to `cd` into the selected directory.
-- **History (`fh`)** — Per-directory command history. Tracks what you run in each folder and lets you pick & re-run from a TUI.
-- **System Monitor (`ftop`)** — Live dashboard showing CPU, RAM, disk, network, GPU, and battery info.
-- **Aliases (`f <name>`)** — Save, list, and run custom command aliases from a TUI picker.
+### File Browser (`fcd`)
+3-column Miller-style file browser with preview. Press Enter to `cd` into the selected directory.
+
+![fcd demo](assets/fcd.gif)
+
+### History (`fh`)
+Per-directory command history. Tracks what you run in each folder and lets you pick & re-run from a TUI.
+
+![fh history](assets/fh.png)
+
+### System Monitor (`ftop`)
+Live dashboard showing CPU, RAM, disk, network, GPU, and battery info.
+
+![ftop system monitor](assets/ftop.png)
+
+### Aliases (`f <name>`)
+Save, list, and run custom command aliases from a TUI picker.
+
+![alias manager](assets/alias.png)
 
 ## Install
 
