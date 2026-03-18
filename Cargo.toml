@@ -1,0 +1,10 @@
+[package]
+name = "fast"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ratatui = "0.30.0"
+sysinfo = "0.38.4"
+gfxinfo = "0.1"
+battery = "0.7"

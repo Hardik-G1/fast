@@ -1,0 +1,9 @@
+pub(crate) mod get;
+pub(crate) mod cpu;
+pub(crate) mod ram;
+pub(crate) mod disk;
+pub(crate) mod network;
+pub(crate) mod system_info;
+pub(crate) mod widget;
+pub(crate) mod gpu;
+pub(crate) mod battery_info;
