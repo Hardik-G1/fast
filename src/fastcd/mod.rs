@@ -91,7 +91,7 @@ pub fn read_path(path: &Path) -> Vec<DirEntry> {
         let name       = item.file_name().to_string_lossy().to_string();
         let is_dir     = meta.is_dir();
         let permission = fmt_permissions(&meta);
-        let size       = if is_dir { fmt_size(dir_size(&item.path())) } else { fmt_size(meta.len()) };
+        let size       = if is_dir { 0 } else { fmt_size(meta.len()) };
         result.push(DirEntry { name, is_dir, size, permission });
     }
     result.sort_by(|a, b| b.is_dir.cmp(&a.is_dir).then(a.name.to_lowercase().cmp(&b.name.to_lowercase())));

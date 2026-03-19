@@ -28,12 +28,6 @@ if ($userPath -notlike "*$dest*") {
 }
 
 # ── 2. Add shell functions to $PROFILE ───────────────────────────────────────
-if (!(Test-Path $PROFILE)) {
-    $profileDir = Split-Path $PROFILE -Parent
-    [System.IO.Directory]::CreateDirectory($profileDir) | Out-Null
-    [System.IO.File]::WriteAllText($PROFILE, "")
-}
-
 $snippet = @'
 
 # fast-tools
@@ -53,20 +47,33 @@ function prompt {
 # fast-tools-end
 '@
 
-$existing = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-if ($existing -and $existing.Contains($marker)) {
-    $pattern = '(?s)' + [regex]::Escape($marker) + '.*?' + [regex]::Escape('# fast-tools-end')
-    $updated = [regex]::Replace($existing, $pattern, '').Trim()
-    Set-Content -Path $PROFILE -Value ($updated + "`n" + $snippet)
-    Write-Host "Shell functions updated in $PROFILE" -ForegroundColor Green
-} else {
-    Add-Content -Path $PROFILE -Value $snippet
-    Write-Host "Shell functions added to $PROFILE" -ForegroundColor Green
+try {
+    if (!(Test-Path $PROFILE)) {
+        $profileDir = Split-Path $PROFILE -Parent
+        [System.IO.Directory]::CreateDirectory($profileDir) | Out-Null
+        [System.IO.File]::WriteAllText($PROFILE, "")
+    }
+
+    $existing = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+    if ($existing -and $existing.Contains($marker)) {
+        $pattern = '(?s)' + [regex]::Escape($marker) + '.*?' + [regex]::Escape('# fast-tools-end')
+        $updated = [regex]::Replace($existing, $pattern, '').Trim()
+        Set-Content -Path $PROFILE -Value ($updated + "`n" + $snippet)
+        Write-Host "Shell functions updated in $PROFILE" -ForegroundColor Green
+    } else {
+        Add-Content -Path $PROFILE -Value $snippet
+        Write-Host "Shell functions added to $PROFILE" -ForegroundColor Green
+    }
+} catch {
+    Write-Host "Could not update PowerShell profile at: $PROFILE" -ForegroundColor Yellow
+    Write-Host "Your Documents folder may be redirected (OneDrive)." -ForegroundColor Yellow
+    Write-Host "To set up shell functions manually, create the file and paste:" -ForegroundColor Yellow
+    Write-Host $snippet -ForegroundColor Gray
 }
 
 # ── 3. Done ───────────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "Done! Reload your profile with:" -ForegroundColor Cyan
+Write-Host "Done! Binary is installed. Reload your profile with:" -ForegroundColor Cyan
 Write-Host "  . `$PROFILE" -ForegroundColor White
 Write-Host ""
 Write-Host "Commands available after reload:" -ForegroundColor Cyan
