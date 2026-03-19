@@ -3,7 +3,6 @@
 # Run: .\install-bin.ps1
 
 $ErrorActionPreference = "Stop"
-$marker = "# fast"
 
 # ── 1. Copy binary to a folder on PATH ─────────────────────────────────────
 $src = Join-Path $PSScriptRoot "fast.exe"
@@ -27,56 +26,65 @@ if ($userPath -notlike "*$dest*") {
     Write-Host "$dest already in PATH" -ForegroundColor Green
 }
 
-# ── 2. Add shell functions to $PROFILE ───────────────────────────────────────
+# ── 2. Write shell functions to ~/.fast/init.ps1 ─────────────────────────────
+$initFile = Join-Path $dest "init.ps1"
 $snippet = @'
-
-# fast-tools
+# fast-tools shell functions
 function fcd  { $d = (& fast); if ($d) { Set-Location $d.Trim() } }
 function fh   { fast hist }
 function ftop { fast top }
 function f    { $cmd = (& fast alias run $args); if ($cmd) { Invoke-Expression $cmd.Trim() } else { Write-Host "Alias '$args' not found" } }
-$__fast_orig_prompt = if (Test-Path Function:\prompt) { Get-Content Function:\prompt } else { $null }
-function prompt {
-    $__fast_ok = $?
-    if ($__fast_ok) {
-        $c = (Get-History -Count 1 -EA SilentlyContinue).CommandLine
-        if ($c) { fast hist --add $c }
+# Record last command to fast history (runs in background to avoid slowing prompt)
+$__fast_last_hist_id = 0
+function __fast_hist_record {
+    $last = Get-History -Count 1 -EA SilentlyContinue
+    if ($last -and $last.Id -ne $script:__fast_last_hist_id) {
+        $script:__fast_last_hist_id = $last.Id
+        Start-Process -FilePath "fast" -ArgumentList "hist","--add",$last.CommandLine -WindowStyle Hidden -EA SilentlyContinue
     }
-    if ($__fast_orig_prompt) { & ([scriptblock]::Create($__fast_orig_prompt)) } else { "PS $($executionContext.SessionState.Path.CurrentLocation)> " }
 }
-# fast-tools-end
+Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -Action { __fast_hist_record } -EA SilentlyContinue | Out-Null
 '@
+Set-Content -Path $initFile -Value $snippet -Force
+Write-Host "Shell functions written to $initFile" -ForegroundColor Green
 
+# ── 3. Add one-liner source to $PROFILE ───────────────────────────────────────
+$sourceLine = ". `"$initFile`""
 try {
     if (!(Test-Path $PROFILE)) {
         $profileDir = Split-Path $PROFILE -Parent
         [System.IO.Directory]::CreateDirectory($profileDir) | Out-Null
-        [System.IO.File]::WriteAllText($PROFILE, "")
-    }
-
-    $existing = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-    if ($existing -and $existing.Contains($marker)) {
-        $pattern = '(?s)' + [regex]::Escape($marker) + '.*?' + [regex]::Escape('# fast-tools-end')
-        $updated = [regex]::Replace($existing, $pattern, '').Trim()
-        Set-Content -Path $PROFILE -Value ($updated + "`n" + $snippet)
-        Write-Host "Shell functions updated in $PROFILE" -ForegroundColor Green
+        [System.IO.File]::WriteAllText($PROFILE, "$sourceLine`n")
+        Write-Host "Created $PROFILE with fast-tools loader" -ForegroundColor Green
     } else {
-        Add-Content -Path $PROFILE -Value $snippet
-        Write-Host "Shell functions added to $PROFILE" -ForegroundColor Green
+        $existing = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+        # Remove old inline fast-tools block if present
+        if ($existing -and $existing.Contains("# fast-tools")) {
+            $pattern = '(?s)# fast-tools.*?# fast-tools-end\r?\n?'
+            $existing = [regex]::Replace($existing, $pattern, '').Trim()
+            Set-Content -Path $PROFILE -Value $existing
+        }
+        # Add source line if not already there
+        $existing = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+        if (!$existing -or !$existing.Contains($initFile)) {
+            Add-Content -Path $PROFILE -Value "`n$sourceLine"
+            Write-Host "Added fast-tools loader to $PROFILE" -ForegroundColor Green
+        } else {
+            Write-Host "fast-tools loader already in $PROFILE" -ForegroundColor Green
+        }
     }
 } catch {
-    Write-Host "Could not update PowerShell profile at: $PROFILE" -ForegroundColor Yellow
-    Write-Host "Your Documents folder may be redirected (OneDrive)." -ForegroundColor Yellow
-    Write-Host "To set up shell functions manually, create the file and paste:" -ForegroundColor Yellow
-    Write-Host $snippet -ForegroundColor Gray
+    Write-Host "Could not update $PROFILE" -ForegroundColor Yellow
+    Write-Host "Add this line to your PowerShell profile manually:" -ForegroundColor Yellow
+    Write-Host "  $sourceLine" -ForegroundColor White
 }
 
-# ── 3. Done ───────────────────────────────────────────────────────────────────
+# ── 4. Done ───────────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "Done! Binary is installed. Reload your profile with:" -ForegroundColor Cyan
-Write-Host "  . `$PROFILE" -ForegroundColor White
+Write-Host "Done! Restart PowerShell or run:" -ForegroundColor Cyan
+Write-Host "  $sourceLine" -ForegroundColor White
 Write-Host ""
-Write-Host "Commands available after reload:" -ForegroundColor Cyan
+Write-Host "Commands available:" -ForegroundColor Cyan
 Write-Host "  fcd              - file browser (cd on Enter)"
 Write-Host "  fh               - history picker (Enter runs command)"
 Write-Host "  ftop             - system monitor"
