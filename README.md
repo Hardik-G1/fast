@@ -1,6 +1,6 @@
 # fast
 
-A fast, TUI-based terminal toolkit written in Rust. Includes a file browser, folder-specific command history, system monitor, and alias manager — all from one binary.
+A fast, TUI-based terminal toolkit written in Rust. Includes a file browser, folder-specific command history, system monitor, and alias manager.
 
 ## Features
 
