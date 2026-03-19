@@ -27,7 +27,7 @@ echo "Binary installed."
 COMMON=$(cat <<'EOF'
 
 # fast-tools
-fcd()  { local d; d=$(fast); [ -n "$d" ] && cd "$d"; }
+fcd()  { local d; d=$(fast cd); [ -n "$d" ] && cd "$d"; }
 fh()   { fast hist; }
 ftop() { fast top; }
 f()    { local cmd; cmd=$(fast alias run "$1"); if [ -n "$cmd" ]; then eval "$cmd"; else echo "Alias '$1' not found"; fi; }

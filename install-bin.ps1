@@ -30,7 +30,7 @@ if ($userPath -notlike "*$dest*") {
 $initFile = Join-Path $dest "init.ps1"
 $snippet = @'
 # fast-tools shell functions
-function fcd  { $d = (& fast); if ($d) { Set-Location $d.Trim() } }
+function fcd  { $d = (& fast cd); if ($d) { Set-Location $d.Trim() } }
 function fh   { fast hist }
 function ftop { fast top }
 function f    { $cmd = (& fast alias run $args); if ($cmd) { Invoke-Expression $cmd.Trim() } else { Write-Host "Alias '$args' not found" } }
