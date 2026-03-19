@@ -29,6 +29,10 @@ if ($userPath -notlike "*$dest*") {
 
 # ── 2. Add shell functions to $PROFILE ───────────────────────────────────────
 if (!(Test-Path $PROFILE)) {
+    $profileDir = Split-Path $PROFILE -Parent
+    if (!(Test-Path $profileDir)) {
+        New-Item -Path $profileDir -ItemType Directory -Force | Out-Null
+    }
     New-Item -Path $PROFILE -ItemType File -Force | Out-Null
 }
 
