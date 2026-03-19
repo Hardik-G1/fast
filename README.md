@@ -32,12 +32,6 @@ Save, list, and run custom command aliases from a TUI picker.
 .\install.ps1
 ```
 
-Or one-liner (clones & builds automatically):
-
-```powershell
-irm https://raw.githubusercontent.com/Hardik-G1/fast/main/install.ps1 | iex
-```
-
 ### PowerShell (pre-built binary, no Cargo)
 
 Place `fast.exe` next to `install-bin.ps1`, then:
