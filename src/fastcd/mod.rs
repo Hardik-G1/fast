@@ -49,11 +49,11 @@ fn fmt_permissions(meta: &std::fs::Metadata) -> String {
     }
 }
 
-fn dir_size(path: &Path) -> u64 {
-    dir_size_inner(path, 10)
+fn _dir_size(path: &Path) -> u64 {
+    _dir_size_inner(path, 10)
 }
 
-fn dir_size_inner(path: &Path, depth: u8) -> u64 {
+fn _dir_size_inner(path: &Path, depth: u8) -> u64 {
     if depth == 0 { return 0; }
     let Ok(entries) = std::fs::read_dir(path) else { return 0; };
     entries.filter_map(|e| e.ok()).map(|e| {
@@ -62,7 +62,7 @@ fn dir_size_inner(path: &Path, depth: u8) -> u64 {
         if m.file_type().is_symlink() {
             0 // skip symlinks entirely
         } else if m.is_dir() {
-            dir_size_inner(&e.path(), depth - 1)
+            _dir_size_inner(&e.path(), depth - 1)
         } else {
             m.len()
         }
@@ -91,7 +91,7 @@ pub fn read_path(path: &Path) -> Vec<DirEntry> {
         let name       = item.file_name().to_string_lossy().to_string();
         let is_dir     = meta.is_dir();
         let permission = fmt_permissions(&meta);
-        let size       = if is_dir { 0 } else { fmt_size(meta.len()) };
+        let size       = if is_dir { "N".to_string() } else { fmt_size(meta.len()) };
         result.push(DirEntry { name, is_dir, size, permission });
     }
     result.sort_by(|a, b| b.is_dir.cmp(&a.is_dir).then(a.name.to_lowercase().cmp(&b.name.to_lowercase())));
