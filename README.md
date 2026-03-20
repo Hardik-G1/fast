@@ -24,27 +24,6 @@ Save, list, and run custom command aliases from a TUI picker.
 
 ![alias manager](assets/alias.png)
 
-## Install
-
-### PowerShell (from source, needs Cargo)
-
-```powershell
-.\install.ps1
-```
-
-### PowerShell (pre-built binary, no Cargo)
-
-Place `fast.exe` next to `install-bin.ps1`, then:
-
-```powershell
-.\install-bin.ps1
-```
-
-### Bash / Zsh (from source, needs Cargo)
-
-```bash
-bash install.sh
-```
 
 ## Usage
 
