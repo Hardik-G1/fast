@@ -28,23 +28,25 @@ if ($userPath -notlike "*$dest*") {
 
 # ── 2. Write shell functions to ~/.fast/init.ps1 ─────────────────────────────
 $initFile = Join-Path $dest "init.ps1"
-$snippet = @'
+$fastExe = Join-Path $dest "fast.exe"
+$snippet = @"
 # fast-tools shell functions
-function fcd  { $d = (& fast cd); if ($d) { Set-Location $d.Trim() } }
-function fh   { fast hist }
-function ftop { fast top }
-function f    { $cmd = (& fast alias run $args); if ($cmd) { Invoke-Expression $cmd.Trim() } else { Write-Host "Alias '$args' not found" } }
+`$__fast_exe = "$fastExe"
+function fcd  { `$d = (& `$__fast_exe cd); if (`$d) { Set-Location `$d.Trim() } }
+function fh   { & `$__fast_exe hist }
+function ftop { & `$__fast_exe top }
+function f    { `$cmd = (& `$__fast_exe alias run `$args); if (`$cmd) { Invoke-Expression `$cmd.Trim() } else { Write-Host "Alias '`$args' not found" } }
 # Record last command to fast history (runs in background to avoid slowing prompt)
-$__fast_last_hist_id = 0
+`$__fast_last_hist_id = 0
 function __fast_hist_record {
-    $last = Get-History -Count 1 -EA SilentlyContinue
-    if ($last -and $last.Id -ne $script:__fast_last_hist_id) {
-        $script:__fast_last_hist_id = $last.Id
-        Start-Process -FilePath "fast" -ArgumentList "hist","--add",$last.CommandLine -WindowStyle Hidden -EA SilentlyContinue
+    `$last = Get-History -Count 1 -EA SilentlyContinue
+    if (`$last -and `$last.Id -ne `$script:__fast_last_hist_id) {
+        `$script:__fast_last_hist_id = `$last.Id
+        Start-Process -FilePath `$__fast_exe -ArgumentList "hist","--add",`$last.CommandLine -WindowStyle Hidden -EA SilentlyContinue
     }
 }
 Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -Action { __fast_hist_record } -EA SilentlyContinue | Out-Null
-'@
+"@
 Set-Content -Path $initFile -Value $snippet -Force
 Write-Host "Shell functions written to $initFile" -ForegroundColor Green
 
